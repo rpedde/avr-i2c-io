@@ -1,0 +1,33 @@
+This generic 8 bit IO is implemented using PORTD on an ATmega168.
+
+By default, PORTD comes up in high impedance (input mode).  To use
+a port for output, you must set the output mask to choose the
+pins to use for output.
+
+If an output notification address is set, then an i2c message is sent
+whenever input changes state.  The i2c message that gets sent will be to
+the device and address set in addr 0x42 and 0x43 and the data will be two
+bytes:  the i2c device address of the i2c device itself, followed by the 
+current value of PORTD.
+
+I2C Addresses:
+
+READ
+0x40: Read output mask
+
+0x41: Read PORTD
+
+0x42: Read input notification device
+
+0x43: read input notification address
+
+
+WRITE
+0x40: Set output mask
+
+0x41: Write output (and pullups, for output devices)
+
+0x42: Set input notification device
+
+0x43: Set input notification address
+
