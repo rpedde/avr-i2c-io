@@ -1,4 +1,4 @@
-AVRLIB=~/working.garage/avrlib
+AVRLIB=../../avrlib
 TARGET=i2c-io
 SOURCES=$(TARGET).c $(AVRLIB)/i2c.c $(AVRLIB)/timerx8.c
 LDFLAGS=-Wl,-Map=$(TARGET).map,--cref
