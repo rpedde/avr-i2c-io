@@ -17,9 +17,11 @@ READ
 
 0x41: Read PORTD
 
-0x42: Read input notification device
+0x42: Read PIND
 
-0x43: read input notification address
+0x43: Read input notification device
+
+0x44: read input notification address
 
 
 WRITE
@@ -27,7 +29,7 @@ WRITE
 
 0x41: Write output (and pullups, for output devices)
 
-0x42: Set input notification device
+0x43: Set input notification device
 
-0x43: Set input notification address
+0x44: Set input notification address
 

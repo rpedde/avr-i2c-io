@@ -44,12 +44,12 @@ void i2c_write(uint8_t len, uint8_t *data) {
             PORTD = *in;
             break;
 
-        case 0x42:
+        case 0x43:
             // set input notification device
             i2c_notify_device = *in;
             break;
 
-        case 0x43:
+        case 0x44:
             // set input notification address
             i2c_notify_address = *in;
             break;
@@ -110,11 +110,16 @@ uint8_t i2c_read(uint8_t len, uint8_t *data) {
         break;
 
     case 0x42:
+        // read PIND
+        *data = PIND;
+        break;
+
+    case 0x43:
         // read input notification device
         *data = i2c_notify_device;
         break;
 
-    case 0x43:
+    case 0x44:
         // read input notification address
         *data = i2c_notify_address;
         break;
@@ -142,6 +147,11 @@ int main(void)
 
     DDRC |= (1U << 1);
     PORTC &= ~(1U << 1);
+
+    // Set PORTD to high impedance state
+
+    DDRD=0;
+    PORTD=0;
 
     i2cSetLocalDeviceAddr(0x20, TRUE);
     i2cSetBitrate(10);
