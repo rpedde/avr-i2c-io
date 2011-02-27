@@ -1,3 +1,87 @@
+GENERIC I2C MODULE
+------------------
+
+Generic I2C handling is handled by i2c-core.  This handles common
+I2C requests at standard addresses.  Custom I2C modules (i2c-io,
+for example), handle addresses > 0x40.
+
+Generic I2C Addresses:
+
+READ
+----
+
+0x00: Get magic (return 0xAE)
+0x01: Get device type (from mpusb.h)
+  0x00: Bootloader
+  0x01: LCD
+  0x02: Servo
+  0x03: 8-bit IO
+0x02: Get EEPROM index
+0x03: Get EEPROM data at index (and increment index)
+
+WRITE
+-----
+
+0x00: NOP
+0x01: NOP
+0x02: Set EEPROM index
+0x03: Write EEPROM data at index (and increment index)
+
+Note that I2C reads of address 0x01 are handled by the module
+
+Standard EEPROM values:
+
+0x00: Boot mode
+  0x00: Bootloader
+  0x01: Normal Boot
+0x01: I2C address (0x10 - 0xEE)
+0x02: Subtype (if defined by type)
+
+TYPE 0x01: LCD
+--------------
+
+I2C Addresses:
+
+READ
+0x40: NOP
+0x41: NOP
+0x42: read brightness (0 off, 255 bright)
+
+WRITE
+0x40: write character
+0x41: write instruction
+0x42: set brightness (0 off, 255 bright)
+
+TYPE 0x02: Servo Controller
+---------------------------
+
+I2C Addresses:
+
+READ
+0x40: Servo 0 position
+0x41: Servo 1 position
+0x42: Servo 2 position
+0x43: Servo 3 position
+0x44: Servo 4 position
+0x45: Servo 5 position
+0x46: Servo 6 position
+0x47: Servo 7 position
+
+WRITE
+0x40: Servo 0 position
+0x41: Servo 1 position
+0x42: Servo 2 position
+0x43: Servo 3 position
+0x44: Servo 4 position
+0x45: Servo 5 position
+0x46: Servo 6 position
+0x47: Servo 7 position
+
+
+
+TYPE 0x03: 8-bit IO
+-------------------
+
 This generic 8 bit IO is implemented using PORTD on an ATmega168.
 
 By default, PORTD comes up in high impedance (input mode).  To use
@@ -14,22 +98,18 @@ I2C Addresses:
 
 READ
 0x40: Read output mask
-
 0x41: Read PORTD
-
 0x42: Read PIND
-
 0x43: Read input notification device
-
 0x44: read input notification address
-
 
 WRITE
 0x40: Set output mask
-
 0x41: Write output (and pullups, for output devices)
-
 0x43: Set input notification device
-
 0x44: Set input notification address
+
+EEPROM
+0x05: input notification device
+0x06: input notification address
 
