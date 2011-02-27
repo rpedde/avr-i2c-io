@@ -1,6 +1,6 @@
 AVRLIB=../../avrlib
 TARGET=i2c-io
-SOURCES=$(TARGET).c $(AVRLIB)/i2c.c $(AVRLIB)/timerx8.c
+SOURCES=$(AVRLIB)/i2c.c $(AVRLIB)/timerx8.c
 LDFLAGS=-Wl,-Map=$(TARGET).map,--cref
 MCU=atmega168
 F_CPU=20000000
@@ -18,7 +18,12 @@ ASFLAGS:=-mmcu=$(MCU)
 LDFLAGS:=-mmcu=$(MCU)
 INCDIR=`pwd`
 
-all:	$(TARGET).elf $(TARGET).hex $(TARGET).ok
+TARGETS=i2c-io
+ELFS=$(TARGETS:=.elf)
+HEXES=$(TARGETS:=.hex)
+OKS=$(TARGETS:=.ok)
+
+all:	$(ELFS) $(HEXES) $(OKS)
 
 .o.c:
 	$(CC) -c $(CFLAGS) -I$(INCDIR) $< -o $@
@@ -29,8 +34,8 @@ all:	$(TARGET).elf $(TARGET).hex $(TARGET).ok
 .o.s:
 	$(AS) -c $(ASFLAGS) -I$(INCDIR) $< -o $@
 
-%.elf: $(OBJECTS)
-	$(CC) $(OBJECTS) $(LIB) $(LDFLAGS) -o $@
+%.elf: %.o $(OBJECTS) i2c-core.o
+	$(CC) $^ $(LIB) $(LDFLAGS) -o $@
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary -R .eeprom $< $@
@@ -49,8 +54,8 @@ all:	$(TARGET).elf $(TARGET).hex $(TARGET).ok
 # 		--change-section-address .eeprom-0x810000 \
 # 		$< $@
 
-%ok:
-	$(SIZE) $(TARGET).elf
+%.ok:	%.elf
+	$(SIZE) $<
 	@echo "Errors: none" 
 
 clean:
@@ -69,5 +74,5 @@ clean:
 	@echo "Errors: none"
 
 size:
-	$(SIZE) $(TARGET).elf
+	$(SIZE) $(ELFS)
 
