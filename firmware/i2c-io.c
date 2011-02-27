@@ -80,4 +80,12 @@ uint8_t i2c_handle_read(uint8_t addr, uint8_t len, uint8_t *data) {
     return 1;
 }
 
+void i2c_handle_init(void) {
+    // Set PORTD to high impedance state
+    DDRD=0;
+    PORTD=0;
+}
+
+void i2c_handle_idle(void) {
+}
 

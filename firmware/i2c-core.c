@@ -11,16 +11,12 @@
 
 #include <mpusb/mpusb.h>
 
-//uint8_t i2c_buffer[BUFFER_SIZE];
-//uint8_t i2c_buffer_len=BUFFER_SIZE;
 uint8_t i2c_addr=0;
-
 uint8_t eeprom_index=0;
 uint8_t got_addr=0;
 
 void i2c_recv(uint8_t len, uint8_t *data);
 uint8_t i2c_reply(uint8_t len, uint8_t *data);
-
 
 /* someone is writing to me! */
 void i2c_write(uint8_t len, uint8_t *data) {
@@ -87,10 +83,7 @@ int main(void) {
     DDRC |= (1U << 1);
     PORTC &= ~(1U << 1);
 
-    // Set PORTD to high impedance state
-
-    DDRD=0;
-    PORTD=0;
+    i2c_handle_init();
 
     eeprom_index = 1;
     device_addr = (eeprom_read_byte(&eeprom_index) << 1);
@@ -106,5 +99,6 @@ int main(void) {
     i2cSetSlaveTransmitHandler(i2c_read);
 
     while(1) {
+        i2c_handle_idle();
     }
 }
