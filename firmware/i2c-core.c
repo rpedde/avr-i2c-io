@@ -11,6 +11,10 @@
 
 #include <mpusb/mpusb.h>
 
+#define FIRMWARE_MAJOR  2
+#define FIRMWARE_MINOR  0
+
+uint8_t device_addr=0x20;
 uint8_t i2c_addr=0;
 uint8_t eeprom_index=0;
 uint8_t got_addr=0;
@@ -32,9 +36,9 @@ void i2c_write(uint8_t len, uint8_t *data) {
             break;
         case 3:
             // write eeprom
-            eeprom_write_byte(&eeprom_index, data[1]);
+            eeprom_write_byte((uint8_t*)(uint16_t)eeprom_index, data[1]);
+            eeprom_index++;
             break;
-
         default:
             i2c_handle_write(i2c_addr, len, &data[1]);
             break;
@@ -58,8 +62,18 @@ uint8_t i2c_read(uint8_t len, uint8_t *data) {
 
     case 3:
         // read eeprom
-        *data = eeprom_read_byte(&eeprom_index);
+        *data = eeprom_read_byte((uint8_t*)(uint16_t)eeprom_index);
         eeprom_index++;
+        break;
+
+    case 4:
+        // get firmware major
+        *data = FIRMWARE_MAJOR;
+        break;
+
+    case 5:
+        // get firmware minor
+        *data = FIRMWARE_MINOR;
         break;
 
     default:
@@ -71,7 +85,6 @@ uint8_t i2c_read(uint8_t len, uint8_t *data) {
 }
 
 int main(void) {
-    uint8_t device_addr;
 
     // Set internal pullups on the AVR (should be settable)
     DDRC &= ~((1U << 4) | (1U << 5));
@@ -83,11 +96,7 @@ int main(void) {
     DDRC |= (1U << 1);
     PORTC &= ~(1U << 1);
 
-    i2c_handle_init();
-
-    eeprom_index = 1;
-    device_addr = (eeprom_read_byte(&eeprom_index) << 1);
-    eeprom_index = 0;
+    device_addr = (eeprom_read_byte((uint8_t*)1) << 1);
 
     if((device_addr < 0x10) || (device_addr > 0xEE))
         device_addr = 0x20;
@@ -97,6 +106,8 @@ int main(void) {
 
     i2cSetSlaveReceiveHandler(i2c_write);
     i2cSetSlaveTransmitHandler(i2c_read);
+
+    i2c_handle_init();
 
     while(1) {
         i2c_handle_idle();
