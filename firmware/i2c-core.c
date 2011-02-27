@@ -2,17 +2,20 @@
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
-
+#include <avr/eeprom.h>
 #include "i2c-core.h"
 #include "i2c-module.h"
 
 #include "i2c.h"
 #include "timerx8.h"
 
-uint8_t i2c_buffer[BUFFER_SIZE];
-uint8_t i2c_buffer_len=BUFFER_SIZE;
+#include <mpusb/mpusb.h>
+
+//uint8_t i2c_buffer[BUFFER_SIZE];
+//uint8_t i2c_buffer_len=BUFFER_SIZE;
 uint8_t i2c_addr=0;
 
+uint8_t eeprom_index=0;
 uint8_t got_addr=0;
 
 void i2c_recv(uint8_t len, uint8_t *data);
@@ -26,47 +29,41 @@ void i2c_write(uint8_t len, uint8_t *data) {
     i2c_addr = *data;
 
     if(len > 1) {
-        i2c_handle_write(i2c_addr, len, &data[1]);
+        switch(i2c_addr) {
+        case 2:
+            // set eeprom index
+            eeprom_index = data[1];
+            break;
+        case 3:
+            // write eeprom
+            eeprom_write_byte(&eeprom_index, data[1]);
+            break;
+
+        default:
+            i2c_handle_write(i2c_addr, len, &data[1]);
+            break;
+        }
     }
 }
 
 /* someone is reading me! */
 uint8_t i2c_read(uint8_t len, uint8_t *data) {
-    uint8_t index;
-
-    PORTC ^= (1U << 1);
-
-    //    i2c_buffer[0] = 0xae;
     switch(i2c_addr) {
-    case 0:
+    case 0: // read magic
         *data = 0xAE;
         break;
 
-    case 1:
-        *data = 3; // 8-bit IO
-        break;
+        // case 1 handled by module
 
     case 2:
         // get eeprom index
+        *data = eeprom_index;
         break;
 
     case 3:
         // read eeprom
-        break;
-
-    case 4:
-        // get firmware version ???
-        *data = 5;
-        break;
-
-    case 5:
-        // get proc type
-        *data = 2;
-        break;
-
-    case 6:
-        // get proc speed
-        *data = F_CPU/1000000;
+        *data = eeprom_read_byte(&eeprom_index);
+        eeprom_index++;
         break;
 
     default:
@@ -77,9 +74,8 @@ uint8_t i2c_read(uint8_t len, uint8_t *data) {
     return 1;
 }
 
-int main(void)
-{
-    uint8_t send_buffer[2];
+int main(void) {
+    uint8_t device_addr;
 
     // Set internal pullups on the AVR (should be settable)
     DDRC &= ~((1U << 4) | (1U << 5));
@@ -96,13 +92,18 @@ int main(void)
     DDRD=0;
     PORTD=0;
 
-    i2cSetLocalDeviceAddr(0x20, TRUE);
+    eeprom_index = 1;
+    device_addr = (eeprom_read_byte(&eeprom_index) << 1);
+    eeprom_index = 0;
+
+    if((device_addr < 0x10) || (device_addr > 0xEE))
+        device_addr = 0x20;
+
+    i2cSetLocalDeviceAddr(device_addr, TRUE);
     i2cSetBitrate(10);
 
     i2cSetSlaveReceiveHandler(i2c_write);
     i2cSetSlaveTransmitHandler(i2c_read);
-
-    //    timerPause(500);
 
     while(1) {
     }

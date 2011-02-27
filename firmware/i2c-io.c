@@ -7,6 +7,7 @@
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include "i2c-core.h"
+#include <mpusb/mpusb.h>
 
 uint8_t i2c_notify_device = 0;
 uint8_t i2c_notify_address = 0;
@@ -41,6 +42,11 @@ void i2c_handle_write(uint8_t addr, uint8_t len, uint8_t *data) {
 
 uint8_t i2c_handle_read(uint8_t addr, uint8_t len, uint8_t *data) {
     switch(addr) {
+    case 0x01:
+        // board type
+        *data = I2C_IO;
+        break;
+
     case 0x40:
         // read output mask
         *data = DDRD;

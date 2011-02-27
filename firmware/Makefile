@@ -13,7 +13,7 @@ SIZE=avr-size
 FORMAT=ihex
 
 OBJECTS=$(SOURCES:.c=.o)
-CFLAGS:=-mmcu=$(MCU) -I. -I$(shell pwd) -I$(shell cd ${AVRLIB}; pwd) -Os -DF_CPU=$(F_CPU) -DDEVICE=$(MCU)
+CFLAGS:=-mmcu=$(MCU) -I. -I/usr/local/include -I$(shell pwd) -I$(shell cd ${AVRLIB}; pwd) -Os -DF_CPU=$(F_CPU)
 ASFLAGS:=-mmcu=$(MCU)
 LDFLAGS:=-mmcu=$(MCU)
 INCDIR=`pwd`
