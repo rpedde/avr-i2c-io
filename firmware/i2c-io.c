@@ -104,7 +104,7 @@ void i2c_handle_init(void) {
 
 void i2c_handle_idle(void) {
     static uint8_t countdown[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-    char buffer[3];
+    char buffer[4];
     uint8_t index;
     uint8_t rack;
 
@@ -120,8 +120,9 @@ void i2c_handle_idle(void) {
 
                     if(i2c_notify_device) {
                         buffer[0] = i2c_notify_address;
-                        buffer[1] = device_addr;
-                        buffer[2] = pind_expected;
+                        buffer[1] = CB_TYPE_I2C;
+                        buffer[2] = device_addr;
+                        buffer[3] = pind_expected;
 
                         i2cMasterSendNI(i2c_notify_device << 1, 3, buffer);
                     }
